@@ -2,28 +2,28 @@
   "rules": {
     "users": {
       "$uid": {
-        ".read": "auth != null && (auth.uid === $uid || root.child('users').child(auth.uid).child('role').val() === 'admin')",
-        ".write": "auth != null && root.child('users').child(auth.uid).child('role').val() === 'admin'"
+        ".read": true,
+        ".write": true
       }
     },
     "trainingRecords": {
-      ".read": "auth != null",
-      ".write": "auth != null",
+      ".read": true,
+      ".write": true,
       "$recordId": {
         ".validate": "newData.hasChildren(['personName', 'company', 'trainingType', 'dateCompleted', 'expiryDate', 'trainingOrg'])"
       }
     },
     "settings": {
-      ".read": "auth != null",
-      ".write": "auth != null && root.child('users').child(auth.uid).child('role').val() === 'admin'"
+      ".read": true,
+      ".write": true
     },
     "trainingTypes": {
-      ".read": "auth != null",
-      ".write": "auth != null && root.child('users').child(auth.uid).child('role').val() === 'admin'"
+      ".read": true,
+      ".write": true
     },
     "notifications": {
-      ".read": "auth != null && root.child('users').child(auth.uid).child('role').val() === 'admin'",
-      ".write": "auth != null"
+      ".read": true,
+      ".write": true
     }
   }
 }

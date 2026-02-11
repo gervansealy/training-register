@@ -12,32 +12,43 @@ let userRole = null;
 let editingRecordId = null;
 let allRecords = [];
 
-onAuthStateChanged(auth, async (user) => {
-    if (!user) {
-        window.location.href = 'index.html';
-        return;
-    }
-    
-    currentUser = user;
-    const userRef = ref(db, `users/${user.uid}`);
-    const snapshot = await get(userRef);
-    
-    if (snapshot.exists()) {
-        userRole = snapshot.val().role;
-        document.getElementById('userEmail').textContent = user.email;
-        document.getElementById('userRole').textContent = userRole;
-        
-        if (userRole === 'admin') {
-            document.getElementById('adminBtn').style.display = 'inline-block';
-        }
-        
-        loadRecords();
-    }
-});
+// Temporary bypass - no login required
+currentUser = { email: 'admin@training-register.com', uid: 'temp-admin' };
+userRole = 'admin';
+document.getElementById('userEmail').textContent = 'Admin (No Login)';
+document.getElementById('userRole').textContent = 'admin';
+document.getElementById('adminBtn').style.display = 'inline-block';
+loadRecords();
+
+// Comment out original auth check
+// onAuthStateChanged(auth, async (user) => {
+//     if (!user) {
+//         window.location.href = 'index.html';
+//         return;
+//     }
+//     
+//     currentUser = user;
+//     const userRef = ref(db, `users/${user.uid}`);
+//     const snapshot = await get(userRef);
+//     
+//     if (snapshot.exists()) {
+//         userRole = snapshot.val().role;
+//         document.getElementById('userEmail').textContent = user.email;
+//         document.getElementById('userRole').textContent = userRole;
+//         
+//         if (userRole === 'admin') {
+//             document.getElementById('adminBtn').style.display = 'inline-block';
+//         }
+//         
+//         loadRecords();
+//     }
+// });
 
 document.getElementById('logoutBtn').addEventListener('click', async () => {
-    await signOut(auth);
-    window.location.href = 'index.html';
+    // Temporary bypass - just reload
+    window.location.reload();
+    // await signOut(auth);
+    // window.location.href = 'index.html';
 });
 
 document.getElementById('adminBtn').addEventListener('click', () => {

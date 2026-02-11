@@ -73,6 +73,8 @@ document.getElementById('cancelBtn').addEventListener('click', () => {
 document.getElementById('recordForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     
+    console.log('Form submitted!');
+    
     const recordData = {
         personName: document.getElementById('personName').value,
         company: document.getElementById('company').value,
@@ -84,19 +86,26 @@ document.getElementById('recordForm').addEventListener('submit', async (e) => {
         modifiedBy: currentUser.email
     };
 
+    console.log('Saving data:', recordData);
+
     try {
         if (editingRecordId) {
+            console.log('Updating record:', editingRecordId);
             const recordRef = ref(db, `trainingRecords/${editingRecordId}`);
             await update(recordRef, recordData);
         } else {
+            console.log('Creating new record');
             const recordsRef = ref(db, 'trainingRecords');
             await push(recordsRef, recordData);
         }
         
+        console.log('Save successful!');
+        alert('Record saved successfully!');
         document.getElementById('recordModal').classList.remove('active');
         document.getElementById('recordForm').reset();
     } catch (error) {
-        alert('Error saving record: ' + error.message);
+        console.error('Save error:', error);
+        alert('Error saving record: ' + error.message + '\n\nCheck console for details.');
     }
 });
 

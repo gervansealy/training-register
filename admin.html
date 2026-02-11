@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Training Register - Admin Panel</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-content">
+            <h1>Training Register - Admin Panel</h1>
+            <div class="nav-right">
+                <span id="userEmail"></span>
+                <button id="dashboardBtn" class="btn btn-secondary">Back to Dashboard</button>
+                <button id="logoutBtn" class="btn btn-danger">Logout</button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="admin-sections">
+            <section class="admin-section">
+                <h2>User Management</h2>
+                <div class="form-group">
+                    <label for="newUserEmail">New User Email</label>
+                    <input type="email" id="newUserEmail" placeholder="user@example.com">
+                </div>
+                <div class="form-group">
+                    <label for="newUserPassword">Password</label>
+                    <input type="password" id="newUserPassword" placeholder="Min 6 characters">
+                </div>
+                <div class="form-group">
+                    <label for="newUserRole">Role</label>
+                    <select id="newUserRole">
+                        <option value="editor">Editor</option>
+                        <option value="admin">Admin</option>
+                    </select>
+                </div>
+                <button id="createUserBtn" class="btn btn-primary">Create User</button>
+                <div id="userMessage" class="message"></div>
+
+                <h3>Existing Users</h3>
+                <div id="usersList" class="users-list"></div>
+            </section>
+
+            <section class="admin-section">
+                <h2>Email Notification Settings</h2>
+                <div class="form-group">
+                    <label for="notificationEmails">Notification Email Addresses</label>
+                    <textarea id="notificationEmails" rows="4" placeholder="Enter email addresses (one per line)"></textarea>
+                    <small>These emails will receive expiration notifications</small>
+                </div>
+                <div class="form-group">
+                    <label for="notificationIntervals">Notification Intervals (Days before expiry)</label>
+                    <input type="text" id="notificationIntervals" placeholder="e.g., 59,49,39,29,14,7,3,1">
+                    <small>Comma-separated values in descending order</small>
+                </div>
+                <button id="saveNotificationBtn" class="btn btn-primary">Save Notification Settings</button>
+                <div id="notificationMessage" class="message"></div>
+            </section>
+
+            <section class="admin-section">
+                <h2>Training Types Management</h2>
+                <div class="form-group">
+                    <label for="newTrainingType">Add Training Type</label>
+                    <input type="text" id="newTrainingType" placeholder="e.g., Rigging and Lifting Certification">
+                </div>
+                <button id="addTrainingTypeBtn" class="btn btn-primary">Add Training Type</button>
+                
+                <h3>Existing Training Types</h3>
+                <div id="trainingTypesList" class="training-types-list"></div>
+                <div id="trainingTypeMessage" class="message"></div>
+            </section>
+
+            <section class="admin-section">
+                <h2>System Status</h2>
+                <div class="status-grid">
+                    <div class="status-card">
+                        <h3>Total Records</h3>
+                        <p id="totalRecords" class="status-value">0</p>
+                    </div>
+                    <div class="status-card">
+                        <h3>Expiring Soon (≤30 days)</h3>
+                        <p id="expiringSoon" class="status-value">0</p>
+                    </div>
+                    <div class="status-card">
+                        <h3>Expired</h3>
+                        <p id="expired" class="status-value">0</p>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <script type="module" src="admin.js"></script>
+</body>
+</html>

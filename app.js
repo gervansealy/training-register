@@ -88,43 +88,51 @@ document.getElementById('recordForm').addEventListener('submit', async (e) => {
 
     console.log('Saving data:', recordData);
 
+    // TEMPORARY: Save to localStorage
     try {
+        let records = JSON.parse(localStorage.getItem('trainingRecords') || '[]');
+        
         if (editingRecordId) {
             console.log('Updating record:', editingRecordId);
-            const recordRef = ref(db, `trainingRecords/${editingRecordId}`);
-            await update(recordRef, recordData);
+            const index = records.findIndex(r => r.id === editingRecordId);
+            if (index !== -1) {
+                records[index] = { ...recordData, id: editingRecordId };
+            }
         } else {
             console.log('Creating new record');
-            const recordsRef = ref(db, 'trainingRecords');
-            await push(recordsRef, recordData);
+            const newRecord = { ...recordData, id: Date.now().toString() };
+            records.push(newRecord);
         }
         
-        console.log('Save successful!');
+        localStorage.setItem('trainingRecords', JSON.stringify(records));
+        console.log('Save successful to localStorage!');
         alert('Record saved successfully!');
+        
         document.getElementById('recordModal').classList.remove('active');
         document.getElementById('recordForm').reset();
+        
+        // Reload records
+        loadRecordsFromLocalStorage();
     } catch (error) {
         console.error('Save error:', error);
-        alert('Error saving record: ' + error.message + '\n\nCheck console for details.');
+        alert('Error saving record: ' + error.message);
     }
 });
 
 function loadRecords() {
-    const recordsRef = ref(db, 'trainingRecords');
-    onValue(recordsRef, (snapshot) => {
-        allRecords = [];
-        if (snapshot.exists()) {
-            snapshot.forEach((childSnapshot) => {
-                allRecords.push({
-                    id: childSnapshot.key,
-                    ...childSnapshot.val()
-                });
-            });
-        }
+    loadRecordsFromLocalStorage();
+}
+
+function loadRecordsFromLocalStorage() {
+    try {
+        allRecords = JSON.parse(localStorage.getItem('trainingRecords') || '[]');
         displayRecords(allRecords);
         updateFilters();
-        checkExpirations();
-    });
+    } catch (error) {
+        console.error('Error loading records:', error);
+        allRecords = [];
+        displayRecords(allRecords);
+    }
 }
 
 function displayRecords(records) {
@@ -182,11 +190,9 @@ function formatDate(dateString) {
 
 window.editRecord = async (recordId) => {
     editingRecordId = recordId;
-    const recordRef = ref(db, `trainingRecords/${recordId}`);
-    const snapshot = await get(recordRef);
+    const record = allRecords.find(r => r.id === recordId);
     
-    if (snapshot.exists()) {
-        const record = snapshot.val();
+    if (record) {
         document.getElementById('modalTitle').textContent = 'Edit Training Record';
         document.getElementById('personName').value = record.personName;
         document.getElementById('company').value = record.company;
@@ -201,8 +207,10 @@ window.editRecord = async (recordId) => {
 window.deleteRecord = async (recordId) => {
     if (confirm('Are you sure you want to delete this record?')) {
         try {
-            const recordRef = ref(db, `trainingRecords/${recordId}`);
-            await remove(recordRef);
+            let records = JSON.parse(localStorage.getItem('trainingRecords') || '[]');
+            records = records.filter(r => r.id !== recordId);
+            localStorage.setItem('trainingRecords', JSON.stringify(records));
+            loadRecordsFromLocalStorage();
         } catch (error) {
             alert('Error deleting record: ' + error.message);
         }

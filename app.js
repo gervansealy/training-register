@@ -88,51 +88,49 @@ document.getElementById('recordForm').addEventListener('submit', async (e) => {
 
     console.log('Saving data:', recordData);
 
-    // TEMPORARY: Save to localStorage
     try {
-        let records = JSON.parse(localStorage.getItem('trainingRecords') || '[]');
-        
+        // Save to Firebase
         if (editingRecordId) {
-            console.log('Updating record:', editingRecordId);
-            const index = records.findIndex(r => r.id === editingRecordId);
-            if (index !== -1) {
-                records[index] = { ...recordData, id: editingRecordId };
-            }
+            console.log('Updating record in Firebase:', editingRecordId);
+            const recordRef = ref(db, `trainingRecords/${editingRecordId}`);
+            await update(recordRef, recordData);
         } else {
-            console.log('Creating new record');
-            const newRecord = { ...recordData, id: Date.now().toString() };
-            records.push(newRecord);
+            console.log('Creating new record in Firebase');
+            const recordsRef = ref(db, 'trainingRecords');
+            const newRef = await push(recordsRef, recordData);
+            console.log('New record ID:', newRef.key);
         }
         
-        localStorage.setItem('trainingRecords', JSON.stringify(records));
-        console.log('Save successful to localStorage!');
+        console.log('Save successful to Firebase!');
         alert('Record saved successfully!');
         
         document.getElementById('recordModal').classList.remove('active');
         document.getElementById('recordForm').reset();
-        
-        // Reload records
-        loadRecordsFromLocalStorage();
     } catch (error) {
-        console.error('Save error:', error);
-        alert('Error saving record: ' + error.message);
+        console.error('Firebase save error:', error);
+        alert('Error saving record: ' + error.message + '\n\nError code: ' + error.code);
     }
 });
 
 function loadRecords() {
-    loadRecordsFromLocalStorage();
-}
-
-function loadRecordsFromLocalStorage() {
-    try {
-        allRecords = JSON.parse(localStorage.getItem('trainingRecords') || '[]');
+    const recordsRef = ref(db, 'trainingRecords');
+    onValue(recordsRef, (snapshot) => {
+        allRecords = [];
+        if (snapshot.exists()) {
+            snapshot.forEach((childSnapshot) => {
+                allRecords.push({
+                    id: childSnapshot.key,
+                    ...childSnapshot.val()
+                });
+            });
+        }
+        console.log('Loaded records from Firebase:', allRecords.length);
         displayRecords(allRecords);
         updateFilters();
-    } catch (error) {
-        console.error('Error loading records:', error);
-        allRecords = [];
-        displayRecords(allRecords);
-    }
+    }, (error) => {
+        console.error('Firebase read error:', error);
+        alert('Error loading records from Firebase: ' + error.message);
+    });
 }
 
 function displayRecords(records) {
@@ -190,28 +188,36 @@ function formatDate(dateString) {
 
 window.editRecord = async (recordId) => {
     editingRecordId = recordId;
-    const record = allRecords.find(r => r.id === recordId);
+    const recordRef = ref(db, `trainingRecords/${recordId}`);
     
-    if (record) {
-        document.getElementById('modalTitle').textContent = 'Edit Training Record';
-        document.getElementById('personName').value = record.personName;
-        document.getElementById('company').value = record.company;
-        document.getElementById('trainingType').value = record.trainingType;
-        document.getElementById('dateCompleted').value = record.dateCompleted;
-        document.getElementById('expiryDate').value = record.expiryDate;
-        document.getElementById('trainingOrg').value = record.trainingOrg;
-        document.getElementById('recordModal').classList.add('active');
+    try {
+        const snapshot = await get(recordRef);
+        
+        if (snapshot.exists()) {
+            const record = snapshot.val();
+            document.getElementById('modalTitle').textContent = 'Edit Training Record';
+            document.getElementById('personName').value = record.personName;
+            document.getElementById('company').value = record.company;
+            document.getElementById('trainingType').value = record.trainingType;
+            document.getElementById('dateCompleted').value = record.dateCompleted;
+            document.getElementById('expiryDate').value = record.expiryDate;
+            document.getElementById('trainingOrg').value = record.trainingOrg;
+            document.getElementById('recordModal').classList.add('active');
+        }
+    } catch (error) {
+        console.error('Error loading record:', error);
+        alert('Error loading record: ' + error.message);
     }
 };
 
 window.deleteRecord = async (recordId) => {
     if (confirm('Are you sure you want to delete this record?')) {
         try {
-            let records = JSON.parse(localStorage.getItem('trainingRecords') || '[]');
-            records = records.filter(r => r.id !== recordId);
-            localStorage.setItem('trainingRecords', JSON.stringify(records));
-            loadRecordsFromLocalStorage();
+            const recordRef = ref(db, `trainingRecords/${recordId}`);
+            await remove(recordRef);
+            console.log('Record deleted from Firebase');
         } catch (error) {
+            console.error('Error deleting record:', error);
             alert('Error deleting record: ' + error.message);
         }
     }
